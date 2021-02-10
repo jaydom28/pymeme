@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+import argparse
+import sys
+
+from PIL import Image, ImageFont, ImageDraw
+
+def pt_to_px(point_size):
+    return point_size * 1.33
+
+def px_to_pt(pixel_size):
+    return pixel_size * .75
+
+def parse_args(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input_image")
+    parser.add_argument("top_text")
+    parser.add_argument("bottom_text")
+    parser.add_argument("result_image")
+    parser.add_argument("-i", "--interactive", action="store_true")
+    return parser.parse_args(args)
+
+def top_bottom_text_style(image_path, top_text, bottom_text, output_path, font="19927_impact.ttf"):
+    """
+    Creates a meme in the top text and bottom text format. If bottom text is an empty string,
+    it just makes the top text.
+    """
+    my_image = Image.open(image_path)
+    width, height = my_image.size
+    font_size = width // 15
+    title_font = ImageFont.truetype(font=font, size=font_size)
+    image_editable = ImageDraw.Draw(my_image)
+
+    if top_text:
+        text_width, text_height = image_editable.textsize(top_text, font=title_font)
+        text_x, text_y = ((width-text_width)/2, (height/100))
+        image_editable.multiline_text((text_x, text_y), top_text,
+                                      (237, 230, 211), font=title_font)
+    if bottom_text:
+        text_width, text_height = image_editable.textsize(bottom_text, font=title_font)
+        text_x, text_y = ((width-text_width)/2, (height*.97) - text_height)
+        image_editable.multiline_text((text_x, text_y), bottom_text,
+                                      (237, 230, 211), font=title_font)
+    my_image.save(output_path)
+    print(f'MEMEIFIED: {image_path} -> {output_path}')
+    
+
+if __name__ == "__main__":
+    args = parse_args(sys.argv[1:])
+    if not args.interactive:
+        top_bottom_text_style(args.input_image, args.top_text,
+                              args.bottom_text, args.result_image)
+    else:
+        print("In interactive mode, doing nothing")
+
+
